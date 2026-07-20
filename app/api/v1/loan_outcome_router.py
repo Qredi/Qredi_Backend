@@ -13,6 +13,10 @@ from app.services.loan_outcome_service import LoanOutcomeService
 
 router = APIRouter(prefix="/loans", tags=["loan_outcomes"])
 
+# NOTE: literal-path routes (/by-borrower/me, /by-lender/me, /overdue) must be
+# declared before the dynamic "/{loan_id}" route below, otherwise FastAPI
+# matches them against "/{loan_id}" first and fails UUID parsing (422).
+
 
 @router.post(
     "/",
@@ -32,11 +36,6 @@ def create_loan(
         loan_term_months=payload.loan_term_months,
         due_date=payload.due_date,
     )
-
-
-@router.get("/{loan_id}", response_model=LoanOutcomeOut)
-def get_loan(loan_id: UUID, db: Session = Depends(get_db)):
-    return LoanOutcomeService(db).get(loan_id)
 
 
 @router.get("/by-borrower/me", response_model=List[LoanOutcomeOut])
@@ -62,6 +61,11 @@ def list_my_loans_as_lender(
 )
 def list_overdue_loans(db: Session = Depends(get_db)):
     return LoanOutcomeService(db).list_overdue()
+
+
+@router.get("/{loan_id}", response_model=LoanOutcomeOut)
+def get_loan(loan_id: UUID, db: Session = Depends(get_db)):
+    return LoanOutcomeService(db).get(loan_id)
 
 
 @router.patch(

@@ -9,6 +9,7 @@ or gate an endpoint by role imports from here. Nothing else in the codebase
 should directly interact with JWT or password hashing libraries.
 """
 
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -83,7 +84,7 @@ def create_access_token(
     expire = now + (
         expires_delta
         or timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+            minutes=settings.JWT_EXPIRE_MINUTES
         )
     )
 
@@ -99,7 +100,7 @@ def create_access_token(
 
     return jwt.encode(
         payload,
-        settings.JWT_SECRET_KEY,
+        settings.JWT_SECRET,
         algorithm=settings.JWT_ALGORITHM,
     )
 
@@ -109,7 +110,7 @@ def decode_access_token(token: str) -> dict[str, Any]:
     try:
         return jwt.decode(
             token,
-            settings.JWT_SECRET_KEY,
+            settings.JWT_SECRET,
             algorithms=[settings.JWT_ALGORITHM],
         )
 
@@ -133,16 +134,31 @@ def get_current_user(
     Resolve the bearer token into a User row.
 
     Raises:
-        HTTPException: If the token is invalid or the user does not exist.
+        HTTPException: If the token is invalid, its subject isn't a valid
+            UUID, or the user does not exist.
     """
     payload = decode_access_token(token)
 
-    user_id = payload.get("sub")
+    raw_user_id = payload.get("sub")
 
-    if user_id is None:
+    if raw_user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # `sub` is a plain string inside the JWT. Coerce it to a real uuid.UUID
+    # here, at the boundary, before it reaches the repository/DB layer —
+    # UUID(as_uuid=True) columns expect an actual UUID instance and will
+    # blow up (AttributeError: 'str' object has no attribute 'hex') if
+    # handed a string instead.
+    try:
+        user_id = uuid.UUID(raw_user_id)
+    except (ValueError, AttributeError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token subject",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

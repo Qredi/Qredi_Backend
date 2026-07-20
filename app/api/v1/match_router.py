@@ -13,6 +13,10 @@ from app.services.match_service import MatchService
 
 router = APIRouter(prefix="/matches", tags=["matches"])
 
+# NOTE: literal-path routes (/by-umkm/me, /by-lender/me/pending) must be
+# declared before the dynamic "/{match_id}" route below, otherwise FastAPI
+# matches them against "/{match_id}" first and fails UUID parsing (422).
+
 
 @router.post(
     "/",
@@ -30,11 +34,6 @@ def create_match(
     return MatchService(db).create(umkm_id=payload.umkm_id, lender_id=current_user.id, **fields)
 
 
-@router.get("/{match_id}", response_model=MatchOut)
-def get_match(match_id: UUID, db: Session = Depends(get_db)):
-    return MatchService(db).get(match_id)
-
-
 @router.get("/by-umkm/me", response_model=List[MatchOut])
 def list_my_matches_as_umkm(
     current_user: User = Depends(require_roles(UserRole.UMKM)),
@@ -49,6 +48,11 @@ def list_my_pending_matches_as_lender(
     db: Session = Depends(get_db),
 ):
     return MatchService(db).list_pending_for_lender(current_user.id)
+
+
+@router.get("/{match_id}", response_model=MatchOut)
+def get_match(match_id: UUID, db: Session = Depends(get_db)):
+    return MatchService(db).get(match_id)
 
 
 @router.patch(
