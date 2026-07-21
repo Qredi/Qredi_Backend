@@ -11,9 +11,10 @@ import json
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine, text
 from pwdlib import PasswordHash
+from app.core.config import settings
 
 # --- Configuration ---
-DATABASE_URL = "postgresql+psycopg://lilianne:CQkgG8BltX59zTLR4K8V2ljTJKKdWRS7UHk7HuJz5WwvL@localhost:5432/qredi_db_seedertest"
+DATABASE_URL = settings.DATABASE_URL
 CREDENTIALS_OUTPUT_FILE = "generated_credentials.json"
 
 random.seed(42)
