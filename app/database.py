@@ -1,36 +1,47 @@
 """
 Database engine / session bootstrap.
 
-Reads connection info from the DATABASE_URL env var, falling back to a local
-Postgres instance. Swap the driver (psycopg2 / asyncpg / etc.) as needed.
+Uses Supabase Session Pooler for PostgreSQL connections.
 """
 
-import os
 from contextlib import contextmanager
 from typing import Generator
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+
 from app.core.config import settings
 
-engine = create_engine(settings.DATABASE_URL, echo=False, future=True, pool_pre_ping=True)
+
+engine = create_engine(
+    settings.DATABASE_URL,
+    echo=False,
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10,
+    pool_recycle=1800,
+)
+
 
 SessionLocal = sessionmaker(
     bind=engine,
     autocommit=False,
     autoflush=False,
-    future=True,
+    expire_on_commit=False,
 )
 
 
 class Base(DeclarativeBase):
     """Shared declarative base for all ORM models."""
+
     pass
 
 
 def get_db() -> Generator[Session, None, None]:
-    """FastAPI-style dependency / generator for a request-scoped session."""
+    """FastAPI dependency with a request-scoped database session."""
+
     db = SessionLocal()
+
     try:
         yield db
     finally:
@@ -39,21 +50,31 @@ def get_db() -> Generator[Session, None, None]:
 
 @contextmanager
 def session_scope() -> Generator[Session, None, None]:
-    """Context-manager style session for scripts / background jobs."""
+    """Context-manager session for scripts and background jobs."""
+
     db = SessionLocal()
+
     try:
         yield db
         db.commit()
+
     except Exception:
         db.rollback()
         raise
+
     finally:
         db.close()
 
 
 def init_db() -> None:
-    """Create all tables. Intended for local/dev/PoC use (use Alembic in prod)."""
-    from app.models import (  # noqa: F401  (ensures models are registered on Base)
+    """
+    Create all tables.
+
+    Intended for local development and PoC usage.
+    Use Alembic migrations for production.
+    """
+
+    from app.models import (
         organization,
         user,
         umkm_profile,
