@@ -84,18 +84,26 @@ KNOWN_USER_ID_HINT = {"cold_healthy_stable": "a74ac173-6343-4a9d-9c76-62e56379cf
 
 # --- Helpers ---
 def month_multipliers(n_months, trend, volatility, zero_week_prob):
-    if trend == "flat": base = [1.0] * n_months
-    elif trend == "growing": base = [0.55 + (0.9 * i / max(n_months - 1, 1)) for i in range(n_months)]
-    elif trend == "declining": base = [1.25 - (0.85 * i / max(n_months - 1, 1)) for i in range(n_months)]
+    if trend == "flat":
+        base = [1.0] * n_months
+    elif trend == "growing":
+        base = [0.55 + (0.9 * i / max(n_months - 1, 1)) for i in range(n_months)]
+    elif trend == "declining":
+        base = [1.25 - (0.85 * i / max(n_months - 1, 1)) for i in range(n_months)]
     elif trend == "declining_before_due":
         base = [1.0] * n_months
-        for i in range(max(n_months - 2, 0), n_months): base[i] *= 0.45
-    elif trend == "volatile": base = [random.uniform(0.5, 1.6) for _ in range(n_months)]
-    elif trend == "sporadic": base = [random.uniform(0.3, 1.1) for _ in range(n_months)]
-    else: base = [1.0] * n_months
+        for i in range(max(n_months - 2, 0), n_months):
+            base[i] *= 0.45
+    elif trend == "volatile":
+        base = [random.uniform(0.5, 1.6) for _ in range(n_months)]
+    elif trend == "sporadic":
+        base = [random.uniform(0.3, 1.1) for _ in range(n_months)]
+    else:
+        base = [1.0] * n_months
 
     for i in range(n_months):
-        if random.random() < zero_week_prob: base[i] *= random.uniform(0.0, 0.25)
+        if random.random() < zero_week_prob:
+            base[i] *= random.uniform(0.0, 0.25)
     return [max(0.05, m * random.gauss(1.0, volatility)) for m in base]
 
 def gen_amount(category):
@@ -181,9 +189,12 @@ def main():
                 
                 ttype = "payment"
                 roll = random.random()
-                if roll < biz["refund_rate"]: ttype = "refund"
-                elif roll < biz["refund_rate"] + 0.02: ttype = "transfer"
-                elif roll < biz["refund_rate"] + 0.04: ttype = "top_up"
+                if roll < biz["refund_rate"]: 
+                    ttype = "refund"
+                elif roll < biz["refund_rate"] + 0.02: 
+                    ttype = "transfer"
+                elif roll < biz["refund_rate"] + 0.04: 
+                    ttype = "top_up"
                 
                 is_refund = (ttype == "refund") or (ttype == "payment" and random.random() < 0.01)
 
@@ -216,7 +227,7 @@ def main():
             })
 
     # 3. Database Execution
-    print(f"Connecting to database...")
+    print("Connecting to database...")
     print(f"Generated {len(users_data)} users, {len(transactions_data)} transactions, {len(loans_data)} loans.")
     
     with engine.begin() as conn:
@@ -233,7 +244,7 @@ def main():
         """), profiles_data)
 
         chunk_size = 5000
-        print(f"Inserting transactions...")
+        print("Inserting transactions...")
         
         # 🟢 Removed payment_method from INSERT columns and VALUES below
         tx_query = text("""
@@ -253,7 +264,7 @@ def main():
             conn.execute(tx_query, transactions_data[i:i+chunk_size])
 
         if loans_data:
-            print(f"Inserting loans...")
+            print("Inserting loans...")
             conn.execute(text("""
                 INSERT INTO loan_outcomes (
                     id, user_id, lender_id, loan_amount, loan_term_months, 

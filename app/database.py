@@ -74,16 +74,5 @@ def init_db() -> None:
     Use Alembic migrations for production.
     """
 
-    from app.models import (
-        organization,
-        user,
-        umkm_profile,
-        lender_profile,
-        qris_transaction,
-        score,
-        loan_outcome,
-        match,
-        audit_log,
-    )
 
     Base.metadata.create_all(bind=engine)
