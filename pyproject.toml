@@ -26,3 +26,6 @@ dev = [
     "pytest-asyncio>=1.4.0",
     "ruff>=0.15.22",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"migration/env.py" = ["E402"]

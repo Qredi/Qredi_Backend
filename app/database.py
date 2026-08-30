@@ -13,14 +13,18 @@ from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from app.core.config import settings
 
 
-engine = create_engine(
-    settings.DATABASE_URL,
-    echo=False,
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10,
-    pool_recycle=1800,
-)
+_engine_kwargs = {"echo": False, "pool_pre_ping": True}
+
+if not settings.DATABASE_URL.startswith("sqlite"):
+    # pool_size / max_overflow / pool_recycle only apply to QueuePool
+    # (Postgres). SQLite uses SingletonThreadPool and rejects these kwargs.
+    _engine_kwargs.update(
+        pool_size=5,
+        max_overflow=10,
+        pool_recycle=1800,
+    )
+
+engine = create_engine(settings.DATABASE_URL, **_engine_kwargs)
 
 
 SessionLocal = sessionmaker(
@@ -73,17 +77,5 @@ def init_db() -> None:
     Intended for local development and PoC usage.
     Use Alembic migrations for production.
     """
-
-    from app.models import (
-        organization,
-        user,
-        umkm_profile,
-        lender_profile,
-        qris_transaction,
-        score,
-        loan_outcome,
-        match,
-        audit_log,
-    )
 
     Base.metadata.create_all(bind=engine)
