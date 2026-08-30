@@ -9,6 +9,26 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      # Intentionally NOT set here — app.database's os.environ.setdefault()
+      # falls back to sqlite:///:memory: at import time, and the test
+      # fixtures use their own isolated in-memory engine per test anyway.
+      INTERNAL_SERVICE_TOKEN: test-placeholder-token
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Install dependencies (app + test extras)
+        run: |
+          uv sync --frozen
+          uv run pip install pytest httpx
+      - run: uv run ruff check .
+      - name: Run tests
+        run: uv run pytest -v
+
+  migration-check:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
     services:
       postgres:
         image: postgres:16
@@ -23,27 +43,16 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
       - run: uv sync --frozen
-
-      - name: Run migrations
+      - name: Verify alembic migrations apply cleanly to postgres
         run: uv run alembic upgrade head
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-
-      - run: uv run ruff check .
-
-      - name: Run tests
-        run: uv run pytest -v
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
 
   build-and-push:
-    needs: test
-    if: github.ref == 'refs/heads/main'
+    needs: [test, migration-check]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
