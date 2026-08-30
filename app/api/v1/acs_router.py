@@ -1,7 +1,7 @@
 # app/api/v1/acs_scoring.py
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.core.security import require_roles
 from app.models.enums import UserRole
