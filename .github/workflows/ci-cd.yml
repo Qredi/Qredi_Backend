@@ -73,8 +73,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/yourorg/backend:latest
-            ghcr.io/yourorg/backend:${{ github.sha }}
+            ghcr.io/qredi/backend:latest
+            ghcr.io/qredi/backend:${{ github.sha }}
 
   deploy:
     needs: build-and-push
