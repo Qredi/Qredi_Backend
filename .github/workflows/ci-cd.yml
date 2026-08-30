@@ -10,7 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      # Intentionally NOT set here — app.database's os.environ.setdefault()
+      # Not set here on purpose — app.database's os.environ.setdefault()
       # falls back to sqlite:///:memory: at import time, and the test
       # fixtures use their own isolated in-memory engine per test anyway.
       INTERNAL_SERVICE_TOKEN: test-placeholder-token
@@ -29,6 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+      INTERNAL_SERVICE_TOKEN: test-placeholder-token
     services:
       postgres:
         image: postgres:16
