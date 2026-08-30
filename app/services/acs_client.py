@@ -39,11 +39,10 @@ async def acs_score_call(user_id: UUID, technical_scope: bool = False) -> dict:
     """
     url = f"{settings.XGBOOST_SERVICE_URL}/{user_id}/score"
     headers = {"Authorization": f"Bearer {settings.INTERNAL_SERVICE_TOKEN}"}
-    params = {"technical_scope": technical_scope}
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.post(url, headers=headers, params=params)
+            response = await client.post(url, headers=headers)
             response.raise_for_status()
             return response.json()
 
