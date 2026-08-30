@@ -28,7 +28,7 @@ jobs:
   migration-check:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/test_db
       INTERNAL_SERVICE_TOKEN: test-placeholder-token
     services:
       postgres:
