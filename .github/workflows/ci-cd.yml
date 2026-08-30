@@ -14,6 +14,9 @@ jobs:
       # falls back to sqlite:///:memory: at import time, and the test
       # fixtures use their own isolated in-memory engine per test anyway.
       INTERNAL_SERVICE_TOKEN: test-placeholder-token
+      JWT_SECRET: test-secret-key
+      JWT_ALGORITHM: HS256
+
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
