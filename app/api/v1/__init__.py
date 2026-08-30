@@ -23,6 +23,7 @@ from app.api.v1.score_router import router as score_router
 from app.api.v1.loan_outcome_router import router as loan_outcome_router
 from app.api.v1.match_router import router as match_router
 from app.api.v1.audit_log_router import router as audit_log_router
+from app.api.v1.acs_router import router as acs_router
 
 all_routers = [
     auth_router,
@@ -35,6 +36,7 @@ all_routers = [
     loan_outcome_router,
     match_router,
     audit_log_router,
+    acs_router,
 ]
 
 __all__ = [
@@ -48,5 +50,6 @@ __all__ = [
     "loan_outcome_router",
     "match_router",
     "audit_log_router",
+    "acs_router",
     "all_routers",
 ]
