@@ -37,12 +37,13 @@ async def acs_score_call(user_id: UUID, technical_scope: bool = False) -> dict:
         xgboost_service (e.g. bad user_id / no data to score), or any
         other non-2xx response.
     """
-    url = f"{settings.XGBOOST_SERVICE_URL}/{user_id}/score"
+    url = f"{settings.XGBOOST_SERVICE_URL}/acs/{user_id}/score"
     headers = {"Authorization": f"Bearer {settings.INTERNAL_SERVICE_TOKEN}"}
+    params = {"technical_scope": technical_scope}
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.post(url, headers=headers)
+            response = await client.post(url, headers=headers, params=params)
             response.raise_for_status()
             return response.json()
 
