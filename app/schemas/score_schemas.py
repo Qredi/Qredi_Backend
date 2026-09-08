@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID
 
@@ -28,3 +29,6 @@ class ScoreOut(BaseModel):
     confidence_score: Optional[float]
     prediction_label: Optional[str]
     model_version: Optional[str]
+    created_at: Optional[datetime] = None
+    shap_values: Optional[Any] = None
+    top_features: Optional[Any] = None
