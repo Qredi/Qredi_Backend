@@ -16,7 +16,7 @@ router = APIRouter(prefix="/acs-scores", tags=["acs_scores"])
 async def trigger_acs_score(
     user_id: UUID,
     technical_scope: bool = False,
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.LENDER)),
 ):
     try:
         return await acs_score_call(user_id, technical_scope=technical_scope)
