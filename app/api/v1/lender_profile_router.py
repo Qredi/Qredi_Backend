@@ -17,6 +17,13 @@ from app.services.lender_profile_service import LenderProfileService
 
 router = APIRouter(prefix="/lender-profiles", tags=["lender_profiles"])
 
+@router.get("/", response_model=List[LenderProfileOut])
+def list_all_lender_profiles(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+):
+    return LenderProfileService(db).list_all(skip=skip, limit=limit)
 
 @router.post("/me", response_model=LenderProfileOut, status_code=status.HTTP_201_CREATED)
 def create_my_profile(
