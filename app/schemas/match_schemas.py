@@ -7,7 +7,8 @@ from app.models.enums import MatchStatus
 
 
 class MatchCreate(BaseModel):
-    umkm_id: UUID
+    umkm_id: Optional[UUID] = None
+    lender_id: Optional[UUID] = None
     match_score: Optional[float] = None
     recommended_limit: Optional[float] = None
     recommended_interest: Optional[float] = None

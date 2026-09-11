@@ -31,6 +31,9 @@ class LenderProfileService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lender profile not found")
         return profile
 
+    def list_all(self, skip: int = 0, limit: int = 100) -> List[LenderProfile]:
+        return self.profile_repo.get_all(skip=skip, limit=limit)
+
     def update_for_user(self, user_id: UUID, **fields) -> LenderProfile:
         profile = self.get_by_user(user_id)
         return self.profile_repo.update(profile.id, **fields)
