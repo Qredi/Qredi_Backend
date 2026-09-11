@@ -27,7 +27,7 @@ router = APIRouter(prefix="/matches", tags=["matches"])
 )
 def create_match(
     payload: MatchCreate,
-    current_user: User = Depends(require_roles(UserRole.LENDER, UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.LENDER, UserRole.ADMIN, UserRole.UMKM)),
     db: Session = Depends(get_db),
 ):
     fields = payload.model_dump(exclude={"umkm_id"})
